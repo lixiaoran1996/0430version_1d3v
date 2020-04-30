@@ -199,38 +199,52 @@ contains
    end subroutine PM_initialize
 
    subroutine PM_set_elec_density()
-	  PM_vars(:, PM_iv_elec) = 0.0_dp
+      PM_vars(:, PM_iv_elec) = 0.0_dp
       !print *, "Set_elec_density!"
       call PC_loop_part(add_elec_to_dens)
+      ! Anbang: attention!!!: Here we set the boundary as 2 times of its density,
+                            ! because only half cell contributes to the grid
+      PM_vars(1, PM_iv_elec) = 2.d0 * PM_vars(1, PM_iv_elec)
+      PM_vars(PM_grid_size, PM_iv_elec) = 2.d0 * PM_vars(PM_grid_size, PM_iv_elec) 
    end subroutine PM_set_elec_density
 
    subroutine PM_set_ion_density()
-	  PM_vars(:, PM_iv_ion) = 0.0_dp
+      PM_vars(:, PM_iv_ion) = 0.0_dp
       !print *, "Set_ion_density!"
-      call PC_loop_ion_part(add_ion_to_dens)!
+      call PC_loop_ion_part(add_ion_to_dens)
+      PM_vars(1, PM_iv_ion) = 2.d0 * PM_vars(1, PM_iv_ion)
+      PM_vars(PM_grid_size, PM_iv_ion) = 2.d0 * PM_vars(PM_grid_size, PM_iv_ion) 
    end subroutine PM_set_ion_density
 
    subroutine set_elec_en_density()
-    !print *, "Set_elec_en_density!"
+      !print *, "Set_elec_en_density!"
       PM_vars(:, PM_iv_en) = 0.0_dp
       call PC_loop_part(add_elec_en_to_dens)
+      PM_vars(1, PM_iv_en) = 2.d0 * PM_vars(1, PM_iv_en) 
+      PM_vars(PM_grid_size, PM_iv_en) = 2.d0 * PM_vars(PM_grid_size, PM_iv_en) 
    end subroutine set_elec_en_density
 
    subroutine set_ion_en_density()
-    !print *, "Set_ion_en_density!"
+      !print *, "Set_ion_en_density!"
       PM_vars(:, PM_iv_ion_en) = 0.0_dp
       call PC_loop_ion_part(add_ion_en_to_dens)
+      PM_vars(1, PM_iv_ion_en) = 2.d0 * PM_vars(1, PM_iv_ion_en)
+      PM_vars(PM_grid_size, PM_iv_ion_en) = 2.d0 * PM_vars(PM_grid_size, PM_iv_ion_en)
    end subroutine set_ion_en_density
    
    ! set the total velocity of electrons and ions
    subroutine set_elec_vel_density()
       PM_vars(:, PM_iv_vel_elec) = 0.0_dp
       call PC_loop_part(add_elec_vel_to_dens)
+      PM_vars(1, PM_iv_vel_elec) = 2.d0 * PM_vars(1, PM_iv_vel_elec) 
+      PM_vars(PM_grid_size, PM_iv_vel_elec) = 2.d0 * PM_vars(PM_grid_size, PM_iv_vel_elec) 
    end subroutine set_elec_vel_density
 
    subroutine set_ion_vel_density()
-    PM_vars(:, PM_iv_vel_ion) = 0.0_dp
+      PM_vars(:, PM_iv_vel_ion) = 0.0_dp
       call PC_loop_ion_part(add_ion_vel_to_dens)
+      PM_vars(1, PM_iv_vel_ion) = 2.d0 * PM_vars(1, PM_iv_vel_ion) 
+      PM_vars(PM_grid_size, PM_iv_vel_ion) = 2.d0 * PM_vars(PM_grid_size, PM_iv_vel_ion) 
    end subroutine set_ion_vel_density
 
    ! set the directed energy of electrons: m/2 *<u>^2
