@@ -199,100 +199,38 @@ contains
    end subroutine PM_initialize
 
    subroutine PM_set_elec_density()
-    use m_efield_1d
-    integer  :: dbd_type,bd_lr(2)
-    if (PM_useDBD) then
-        call EF_get_DBD_index_and_type(bd_lr, dbd_type)
-    else
-        bd_lr(1)=1
-        bd_lr(2)=PM_grid_size
-    endif
-      PM_vars(:, PM_iv_elec) = 0.0_dp
+	  PM_vars(:, PM_iv_elec) = 0.0_dp
       !print *, "Set_elec_density!"
       call PC_loop_part(add_elec_to_dens)
-      ! Anbang: attention!!!: Here we set the boundary as 2 times of its density,
-                            ! because only half cell contributes to the grid
-      PM_vars(bd_lr(1), PM_iv_elec) = 2.d0 * PM_vars(bd_lr(1), PM_iv_elec) 
-      PM_vars(bd_lr(2), PM_iv_elec) = 2.d0 * PM_vars(bd_lr(2), PM_iv_elec)
    end subroutine PM_set_elec_density
 
    subroutine PM_set_ion_density()
-    use m_efield_1d
-    integer  :: dbd_type,bd_lr(2)
-    if (PM_useDBD) then
-        call EF_get_DBD_index_and_type(bd_lr, dbd_type)
-    else
-        bd_lr(1)=1
-        bd_lr(2)=PM_grid_size
-    endif
-      PM_vars(:, PM_iv_ion) = 0.0_dp
+	  PM_vars(:, PM_iv_ion) = 0.0_dp
       !print *, "Set_ion_density!"
-      call PC_loop_ion_part(add_ion_to_dens)
-    PM_vars(bd_lr(1), PM_iv_ion) = 2.d0 * PM_vars(bd_lr(1), PM_iv_ion)
-    PM_vars(bd_lr(2), PM_iv_ion) = 2.d0 * PM_vars(bd_lr(2), PM_iv_ion)
+      call PC_loop_ion_part(add_ion_to_dens)!
    end subroutine PM_set_ion_density
 
    subroutine set_elec_en_density()
-    use m_efield_1d
-    integer  :: dbd_type,bd_lr(2)
-    if (PM_useDBD) then
-        call EF_get_DBD_index_and_type(bd_lr, dbd_type)
-    else
-        bd_lr(1)=1
-        bd_lr(2)=PM_grid_size
-    endif
-      !print *, "Set_elec_en_density!"
+    !print *, "Set_elec_en_density!"
       PM_vars(:, PM_iv_en) = 0.0_dp
       call PC_loop_part(add_elec_en_to_dens)
-    PM_vars(bd_lr(1), PM_iv_en) = 2.d0 * PM_vars(bd_lr(1), PM_iv_en)
-    PM_vars(bd_lr(2), PM_iv_en) = 2.d0 * PM_vars(bd_lr(2), PM_iv_en)
    end subroutine set_elec_en_density
 
    subroutine set_ion_en_density()
-    use m_efield_1d
-    integer  :: dbd_type,bd_lr(2)
-    if (PM_useDBD) then
-        call EF_get_DBD_index_and_type(bd_lr, dbd_type)
-    else
-        bd_lr(1)=1
-        bd_lr(2)=PM_grid_size
-    endif
-      !print *, "Set_ion_en_density!"
+    !print *, "Set_ion_en_density!"
       PM_vars(:, PM_iv_ion_en) = 0.0_dp
       call PC_loop_ion_part(add_ion_en_to_dens)
-    PM_vars(bd_lr(1), PM_iv_ion_en) = 2.d0 * PM_vars(bd_lr(1), PM_iv_ion_en)
-    PM_vars(bd_lr(2), PM_iv_ion_en) = 2.d0 * PM_vars(bd_lr(2), PM_iv_ion_en)
    end subroutine set_ion_en_density
    
    ! set the total velocity of electrons and ions
    subroutine set_elec_vel_density()
-    use m_efield_1d
-    integer  :: dbd_type,bd_lr(2)
-    if (PM_useDBD) then
-        call EF_get_DBD_index_and_type(bd_lr, dbd_type)
-    else
-        bd_lr(1)=1
-        bd_lr(2)=PM_grid_size
-    endif
       PM_vars(:, PM_iv_vel_elec) = 0.0_dp
       call PC_loop_part(add_elec_vel_to_dens)
-    PM_vars(bd_lr(1), PM_iv_vel_elec) = 2.d0 * PM_vars(bd_lr(1), PM_iv_vel_elec)
-    PM_vars(bd_lr(2), PM_iv_vel_elec) = 2.d0 * PM_vars(bd_lr(2), PM_iv_vel_elec)
    end subroutine set_elec_vel_density
 
    subroutine set_ion_vel_density()
-    use m_efield_1d
-    integer  :: dbd_type,bd_lr(2)
-    if (PM_useDBD) then
-        call EF_get_DBD_index_and_type(bd_lr, dbd_type)
-    else
-        bd_lr(1)=1
-        bd_lr(2)=PM_grid_size
-    endif
-      PM_vars(:, PM_iv_vel_ion) = 0.0_dp
+    PM_vars(:, PM_iv_vel_ion) = 0.0_dp
       call PC_loop_ion_part(add_ion_vel_to_dens)
-    PM_vars(bd_lr(1), PM_iv_vel_ion) = 2.d0 * PM_vars(bd_lr(1), PM_iv_vel_ion)
-    PM_vars(bd_lr(2), PM_iv_vel_ion) = 2.d0 * PM_vars(bd_lr(2), PM_iv_vel_ion)
    end subroutine set_ion_vel_density
 
    ! set the directed energy of electrons: m/2 *<u>^2

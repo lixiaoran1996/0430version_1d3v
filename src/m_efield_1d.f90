@@ -459,7 +459,7 @@ contains
 
                 Qb(1) = UC_eps0 * EF_inv_delta_x + EF_epsDBD(1)/EF_DBD_len(1)
                 Qc(1) = - UC_eps0 * EF_inv_delta_x
-                Qd(1) = surChar(1) + EF_epsDBD(1) / EF_DBD_len(1) * boundPot(1)
+                Qd(1) = surChar(1) + EF_epsDBD(1) / EF_DBD_len(1) * boundPot(1)+net_charge(EF_DBD_index(1))*EF_delta_x
                 
                 Qb(varSize) = 1.d0
                 Qd(varSize) = boundPot(2)
@@ -471,17 +471,17 @@ contains
                 
                 Qa(varSize) = -UC_eps0 * EF_inv_delta_x
                 Qb(varSize) = UC_eps0 / EF_delta_x + EF_epsDBD(2)/EF_DBD_len(2)
-                Qd(varSize) = surChar(2) + EF_epsDBD(2) / EF_DBD_len(2) * boundPot(2)
+                Qd(varSize) = surChar(2) + EF_epsDBD(2) / EF_DBD_len(2) * boundPot(2)+net_charge(EF_DBD_index(2))*EF_delta_x
 
             case(3) ! Dielectric at x = 0 and x = d
 
                 Qb(1) = UC_eps0 / EF_delta_x + EF_epsDBD(1)/ EF_DBD_len(1)
                 Qc(1) = -UC_eps0 / EF_delta_x
-                Qd(1) = surChar(1)+ EF_epsDBD(1)/ EF_DBD_len(1) * boundPot(1)
+                Qd(1) = surChar(1)+ EF_epsDBD(1)/ EF_DBD_len(1) * boundPot(1)+net_charge(EF_DBD_index(1))*EF_delta_x
                 
                 Qa(varSize) = -UC_eps0 / EF_delta_x
                 Qb(varSize) = UC_eps0/ EF_delta_x + EF_epsDBD(2)/ EF_DBD_len(2)
-                Qd(varSize) = surChar(2) + EF_epsDBD(2) / EF_DBD_len(2) * boundPot(2)
+                Qd(varSize) = surChar(2) + EF_epsDBD(2) / EF_DBD_len(2) * boundPot(2)+net_charge(EF_DBD_index(2))*EF_delta_x
         end select
 
     ! solve AES, here we get the potential in the bulk plasma region
