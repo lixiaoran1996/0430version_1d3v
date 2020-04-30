@@ -1,0 +1,100 @@
+# parameters for test Argon for 10Pa
+init_cond_name = block
+init_elec_dens = 2.56d14
+output_interval = 5.d-6  #(100+1/4)T
+
+# gas parameters
+gas_mixture_name = Argon
+gas_component_names = Ar
+gas_crosssec_files  = Ar_phelps_elec_cs.txt
+gas_crosssec_files_for_ions = Ar_phelps_ion_cs.txt
+gas_component_fractions = 1.d0
+gas_temperature = 350.d0
+gas_pressure   = 1d-4
+
+init_width = 1.25d-2
+grid_num_points = 601
+grid_delta_x = 4.17d-5
+sim_elec_times      = 0.d0 5.d-9 
+sim_applied_efield  = 0.d0 5.d6  
+sim_type = particle
+part_transverse_area = 5d-9
+
+sim_end_time = 11d-2
+
+# we use temperature as initial paramters of erergy
+init_use_temInK = t
+init_elec_tem = 3.d4
+init_ion_tem =  3.d2
+init_elec_energy = 2.585d0
+init_ion_energy  = 2.585d-2
+
+sim_name = Arw5verdt1
+initial_weight  =  5.d0
+apm_part_per_cell = 2.56d2
+part_max_energy_eV = 9.8d2
+
+sim_use_voltage = t
+part_timeStepRatio = 1
+part_ionMassRatio = 39.948d0
+# do not forget the atom mass
+part_atomMassRatio= 39.948d0
+sim_useBgVel = t
+
+# the frame we used in the code for ion scattering: 1- lab frame; 2 - com frame
+sim_frame_type = 2
+
+# secondary electron emisson coefficients at two sides
+sim_co_secondary_elec_emmison = 0.d0 0.0d0
+# 1- absorbtion; 2 - reflection, 3- secondary electton emission
+sim_bd_ion = 1 1
+#boundary conditions for electrons: 1 - absorb; 2- reflection
+sim_bd_elec = 1 1
+#sim_ref_coeff_elec = 0.d0 0.d0
+
+# 1- use velocity lookup table
+# 2- use energy, and use cs formular
+sim_table_create_scheme = 2
+
+
+
+# the scheme for backward scattering, 1 -turner; 2 - trasnfer from com to lab
+sim_bw_scheme = 1
+
+# 0:DC, 1:AC
+sim_voltage_type = 1
+sim_voltage_AC_max = 2.50d2
+sim_voltage_AC_fre = 13.56d6
+sim_initial_dt     =  3.685d-12
+
+turner_average_active = t
+#here we calculate 10^4 periods, and then we average 1000 period, for higher pressure
+turner_execute_stepNum = 20000000
+turner_average_stepNum = 1000628  # 50 peroids
+output_eedf_eV_range = 0.d0 200.d0
+output_num_bins = 350
+# how many period we averaged for time evolution parameters
+sim_ave_num_timeEva = 32  # be careful here we need to smaller than really averaged
+
+
+# parameters to deactive the amr
+apm_steps_between =  0
+apm_increase_factor = 1.2d8
+
+# the size of lookup table
+ part_lkptbl_size = 50000
+
+# 1- yousfi, 2- detlef, 3- donko
+sim_rot_scheme = 1
+
+# whether we use verlet completely before collisions
+sim_do_verlet_before_coll = t
+
+# parameters to save and read mid article info
+sim_save_mid_info = t
+sim_read_mid_info = f
+sim_save_steps_interval = 100000
+
+# for convegence testing
+sim_read_file_name = xxx
+sim_conv_fac       = 1d0

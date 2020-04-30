@@ -1,0 +1,304 @@
+ ##############################################
+ ###          Configuration file            ###
+ ##############################################
+
+ # Adapt weight if #part increases by this factor:
+ apm_increase_factor                      = 0.1200E+09  
+
+ # The desired number of particles per cell:
+ apm_part_per_cell                        = 0.1280E+03  
+
+ # Adapt weight every apm_steps_between steps:
+ apm_steps_between                        =          0  
+
+ # Relative weight of vel. in the k-d tree compared to position:
+ apm_vel_rel_weight                       = 0.1000E-05  
+
+ # The name of the eff. ionization coeff.:
+ fluid_en_alpha                           = "energy[eV]_vs_alpha[1/m]"  
+
+ # The name of the diffusion coefficient:
+ fluid_en_dif                             = "energy[eV]_vs_dif[m2/s]"  
+
+ # The name of the eff. attachment coeff.:
+ fluid_en_eta                             = "energy[eV]_vs_eta[1/m]"  
+
+ # The name of the energy vs efield list:
+ fluid_en_fld                             = "energy[eV]_vs_efield[V/m]"  
+
+ # The name of the energy loss coeff.:
+ fluid_en_loss                            = "energy[eV]_vs_loss[eV/s]"  
+
+ # The name of the mobility coefficient:
+ fluid_en_mob                             = "energy[eV]_vs_mu[m2/Vs]"  
+
+ # The name of the eff. ionization coeff.:
+ fluid_fld_alpha                          = "efield[V/m]_vs_alpha[1/m]"  
+
+ # The name of the diffusion coefficient:
+ fluid_fld_dif                            = "efield[V/m]_vs_dif[m2/s]"  
+
+ # The name of the energy(fld) coefficient:
+ fluid_fld_en                             = "efield[V/m]_vs_energy[eV]"  
+
+ # The name of the eff. attachment coeff.:
+ fluid_fld_eta                            = "efield[V/m]_vs_eta[1/m]"  
+
+ # The name of the energy loss coeff.:
+ fluid_fld_loss                           = "efield[V/m]_vs_loss[eV/s]"  
+
+ # The name of the mobility coefficient:
+ fluid_fld_mob                            = "efield[V/m]_vs_mu[m2/Vs]"  
+
+ # The input file for the fluid models:
+ fluid_input_file                         = "transport_data_nitrogen.txt"  
+
+ # The maximum electric field in the fluid model coefficients:
+ fluid_lkptbl_max_efield                  = 0.3000E+08  
+
+ # The maximum mean energy in eV in the fluid model coefficients:
+ fluid_lkptbl_max_energy                  = 0.1000E+03  
+
+ # The transport data table size in the fluid model:
+ fluid_lkptbl_size                        =       1000  
+
+ # Regularization density to compute a mean energy:
+ fluid_small_density                      = 0.1000E+01  
+
+ # Whether to use energy dependent diffusion coefficient:
+ fluid_use_en_dif                         =          F  
+
+ # Whether to use energy dependent mobility:
+ fluid_use_en_mob                         =          F  
+
+ # Whether to use energy dependent source term:
+ fluid_use_en_src                         =          F  
+
+ # Whether to use an energy equation:
+ fluid_use_energy                         =          F  
+
+ # The partial pressure of the gases (as if they were ideal gases):
+ gas_component_fractions                  = 0.1000E+01  
+
+ # The names of the gases used in the simulation:
+ gas_component_names                      = "He"  
+
+ # Electrons: the files in which to find cross section data for each gas:
+ gas_crosssec_files                       = "elecCS_He.txt"  
+
+ # Ions: the files in which to find cross section data for each gas:
+ gas_crosssec_files_for_ions              = "ionCS_He.txt"  
+
+ # The name of the gas mixture used:
+ gas_mixture_name                         = "He"  
+
+ # The gas pressure (bar):
+ gas_pressure                             = 0.1013E+01  
+
+ # The gas temperature (Kelvin):
+ gas_temperature                          = 0.3000E+03  
+
+ # The length of a grid cell:
+ grid_delta_x                             = 0.1E-05  
+
+ # The number of grid cells:
+ grid_num_points                          =       5000
+
+ # The background ion and electron density in 1/m^3:
+ init_background_density                  = 0.0000E+00  
+
+ # The type of initial condition:
+ init_cond_name                           = "block"  
+
+ # The number of initial ion pairs:
+ init_elec_dens                           = 1E+17 
+
+ # The initial energy of the electrons in eV:
+ init_elec_energy                         = 0.2585E+01  
+
+ # The initial temperature of the electrons in K:
+ init_elec_tem                            = 0.3000E+05  
+
+ # The initial energy of the ions in eV:
+ init_ion_energy                          = 0.2585E-01  
+
+ # The initial temperature of the ions in K:
+ init_ion_tem                             = 0.3000E+03  
+
+ # The relative position of the initial seed:
+ init_rel_pos                             = 0.5000E+00  
+
+ # whether we use temperature as initial parameter:
+ init_use_temInK                          =          T  
+
+ # The standard deviation used for Gaussian initial profiles:
+ init_width                               = 0.1250E-01  
+
+ # The initial weight of particles (electrons/ions):
+ initial_weight                           = 0.1000E+02  
+
+ # The maximum number of particles allowed per task(ions):
+ ion_part_max_number_of                   =  250000000  
+
+ # The energy range over which to get the EEDF:
+ output_eedf_eV_range                     = 0.0000E+00  0.2000E+03  
+
+ # The field range(s) over which to get the EEDF:
+ output_eedf_min_max_fields               = 0.0000E+00  0.1000E+11  
+
+ # The timestep for writing output:
+ output_interval                          = 0.1000E-07  
+
+ # The number of bins to use for histograms:
+ output_num_bins                          =        350  
+
+ # The mass ratio between simulated atoms and standard atoms:
+ part_atomMassRatio                       = 0.4000E+01  
+
+ # The mass ratio between ions and standard atoms:
+ part_ionMassRatio                        = 0.4000E+01  
+
+ # The size of the lookup table for the collision rates:
+ part_lkptbl_size                         =      50000  
+
+ # The maximum energy in eV for particles in the simulation:
+ part_max_energy_eV                       = 0.4000E+04  
+
+ # The maximum number of particles allowed per task(electrons):
+ part_max_number_of                       =  250000000  
+
+ # The table size to use in the particle model for lookup tables:
+ part_tableSize                           =      50000  
+
+ # The time step ratio between ions and electrons:
+ part_timeStepRatio                       =          1  
+
+ # The transverse area of the simulation, to convert to m^3 etc.:
+ part_transverse_area                     = 0.5000E-08  
+
+ # Whether we have dielectrics:
+ sim_DBD                                  =          T  
+
+ # The electric field at the specified times.:
+ sim_applied_efield                       = 0.1000E+08  
+
+ # The potential used at left boundary at the specified times.:
+ sim_applied_voltage                      = 0.20E+05
+
+ # We average this number of peroid to get a good fit:
+ sim_ave_num_timeEva                      =         32  
+
+ # the boudary conditions for electrons on both sides: 1- absorbtion; 2 - reflection:
+ sim_bd_elec                              =          1           1  
+
+ # the db for ions on both sides: 1- absorbtion; 2 - reflection, 3- secondary electton emission:
+ sim_bd_ion                               =          1           1 
+
+ # the scheme for backward scattering, 1 - turner(charge exchange); 2 - transfer between com and lab frame:
+ sim_bw_scheme                            =          1  
+
+ # the secondary electron emission coeffients on the both sides:
+ sim_co_secondary_elec_emmison            = 0.5000E-01  0.5000E-01  
+
+ # Whether the electric field is kept constant:
+ sim_constant_efield                      =          F  
+
+ # The factor of time step that want to test convegences:
+ sim_conv_fac                             = 0.1000E+01  
+
+ # How many parts are divided of one peroid, which means we output this times of paramters during one peroid:
+ sim_div_num_one_peroid                   =        100  
+
+ # Whether we do verlet updating completly before do collisions of particles:
+ sim_do_verlet_before_coll                =          T  
+
+ # The times at which the  voltage/electric field is specified.:
+ sim_elec_times                           = 0.0000E+00  
+
+ # The desired endtime in seconds of the simulation:
+ sim_end_time                             = 1.0E-03  
+
+ # The frame we used: 1 - lab frame; 2 - Center of mass frame:
+ sim_frame_type                           =          2  
+
+ # The initial/fixed timestep in seconds:
+ sim_initial_dt                           = 0.3685E-11  
+
+ # the length of the dielectric in both sides:
+ sim_len_del                              = 0   0.1000E-02
+
+ # The maximal timestep in seconds:
+ sim_max_dt                               = 0.1000E-10  
+
+ # randomly choose one particle position; 2 - weighted average position:
+ sim_merge_scheme                         =          1  
+
+ # The name of the simulation:
+ sim_name                                 = "He_0430"  
+
+ # whether we output the potential as a funtion of time in the main program.:
+ sim_output_numerical_para                =          T  
+
+ # whether we output time evaluated paramerters after steady state:
+ sim_output_time_eva_para                 =          T  
+
+ # The name of files we want to read for initializing particles:
+ sim_read_file_name                       = "my_sim"  
+
+ # Here we decide whether we should read particle info from an existed file:
+ sim_read_mid_info                        =          F  
+
+ # the reflection coeffients of electrons on the both sides:
+ sim_ref_coeff_elec                       = 0.3000E+00  0.3000E+00  
+
+ # the relative permittivity of the dielectric in both sides:
+ sim_relPer_del                           = 3   3 
+
+ # Desired relative error in the solution between consecutive steps:
+ sim_rel_error_goal                       = 0.1000E-03  
+
+ # which rotation scheme we choose for scattering: 1- Yousfi, 2- Detlef, 3- Donko:
+ sim_rot_scheme                           =          1  
+
+ # Here we decide whether we should save particle info to an existed file:
+ sim_save_mid_info                        =          T  
+
+ # Here we decide how many simulation time steps we should save the mid particle info:
+ sim_save_steps_interval                  =   20000000  
+
+ # the energy of secondary electrons in eV:
+ sim_secElecEn                            = 0.2000E+01  
+
+ # 1: we use velocity as the column of the lookup table; 2: we use com energy:
+ sim_table_create_scheme                  =          2  
+
+ # time parameters output interval:
+ sim_tim_para_out_interval                =          1  
+
+ # The type of simulation to run, options are particle, fluid_min, fluid_ee:
+ sim_type                                 = "particle"  
+
+ # Whether the velocity of bg gas is considered!:
+ sim_useBgVel                             =          T  
+
+ # Whether to use voltage:
+ sim_use_voltage                          =          T  
+
+ # The frequency of AC, unit: Hz:
+ sim_voltage_AC_fre                       = 0.9000E+04  
+
+ # The amplitude of AC, unit: V:
+ sim_voltage_AC_max                       = 0.2000E+05
+
+ # The type of applied voltage: 0- DC, 1- AC:
+ sim_voltage_type                         =          0
+
+ # Whether we active average routines:
+ turner_average_active                    =          T  
+
+ # The step nums for averaging the valuse in turner's code:
+ turner_average_stepNum                   =  100000000  
+
+ # The step nums when to excute in turner's code:
+ turner_execute_stepNum                   =   50000000  
+
