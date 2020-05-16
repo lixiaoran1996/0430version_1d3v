@@ -412,6 +412,7 @@ program dbd_1d
         !Anbang: Her we set if we need to use dbd, we have to calculate the surface charge
         if (use_DBD) then
             call PM_get_surface_charge_density(dt)
+			call PM_field_emission(dt)
             call PM_collectsurfChargeAtRoot(myrank, root)  ! the charge is collected at root
         end if
 
@@ -600,7 +601,9 @@ contains
 
    !> Create the parameters and their default values for the simulation
    subroutine create_sim_config()
-
+	! Field emission parameters
+      call CFG_add("field factor", 5.0D1, "The local field enhancement factor due to roughness of surface")
+      call CFG_add("work fuction", 4.0D0, "The energy(eV) for electron can escape trap") 
       ! General simulation parameters
       call CFG_add("sim_type", "fluid", "The type of simulation to run, options are particle, fluid_min, fluid_ee")
       call CFG_add("sim_end_time", 1.0D-9, "The desired endtime in seconds of the simulation")

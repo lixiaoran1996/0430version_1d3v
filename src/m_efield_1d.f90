@@ -40,9 +40,16 @@ module m_efield_1d
   public :: EF_get_old_efield
   public :: EF_get_boundary_potential
   public :: EF_get_efield_index
+  public :: EF_get_values_dbd
 
 
 contains
+
+  subroutine EF_get_values_dbd(out_efield)
+    real(dp), intent(out) :: out_efield(2)
+    out_efield(1) = EF_values(EF_DBD_index(1) + 1)
+    out_efield(1) = EF_values(EF_DBD_index(2))
+  end subroutine EF_get_values_dbd
 
   subroutine EF_initialize()
     use m_config
