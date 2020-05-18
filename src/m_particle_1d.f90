@@ -103,8 +103,8 @@ contains
         real(dp)     :: dbd_field(2), emission_current(2)
         real(dp)     :: variable_y(2),t(2),v(2),enhance_field(2),number_elec(2)
         real(dp),intent(in)    :: tt
-        real(dp)     :: weight_initial,xx,pos(3),accel(3),vel(3),elec_temp,temp
-        integer      :: pp,nn
+        real(dp)     :: weight_initial,xx,pos(3),accel(3),vel(3),elec_temp,temp,old_vel
+        integer      :: pp
         elec_temp = CFG_get_real("init_elec_tem")
         weight_initial= CFG_get_real("initial_weight")
         PM_field_factor = CFG_get_real("field factor")
@@ -114,68 +114,117 @@ contains
 
         if (abs(dbd_field(1))>1.0d9) then 
 		!Es=Belta*E
-                enhance_field(1) = PM_field_factor * dbd_field(1)
-                !y=3.79d-5*sqrt(Es)/PM_work_fuction
-                variable_y(1) = 3.79d-5 * sqrt(enhance_field(1)) / PM_work_fuction	
-                !t2=1-y^2*(1-Ln(y)/3) v=1+y^2*(1-Ln(y)/9)
-                t(1) = 1 - variable_y(1)**2 * (1 - dlog(variable_y(1)) / 3)
-                v(1) = 1 + variable_y(1)**2 * (1 - dlog(variable_y(1)) / 9)
-                !Jfe calculate
-                emission_current(1) = 1.51414d-6 * (enhance_field(1)**2 / PM_work_fuction*t(1))* &
-                exp(-6.8309d9 * PM_work_fuction**(1.5_dp) * v(1) / enhance_field(1))
-                !handle emission electron  N=J*S*dt/q now N is real paticles number
-                number_elec(1) = emission_current(1) * PM_transverse_area * tt / UC_elem_charge
-                !due to electron emission,equal to that suface charge positive increase
-                PM_surChargeAtroot(1) = PM_surChargeAtroot(1) + number_elec(1)
-                !calculate mcroparticles ,i.e.N=N/initial/weight, assume new particle weight is initial weight
-                number_elec(1) = number_elec(1) / weight_initial
+			enhance_field(1) = PM_field_factor * dbd_field(1)
+			!y=3.79d-5*sqrt(Es)/PM_work_fuction
+			variable_y(1) = 3.79d-5 * sqrt(enhance_field(1)) / PM_work_fuction	
+			!t2=1-y^2*(1-Ln(y)/3) v=1+y^2*(1-Ln(y)/9)
+			t(1) = 1 - variable_y(1)**2 * (1 - dlog(variable_y(1)) / 3)
+			v(1) = 1 + variable_y(1)**2 * (1 - dlog(variable_y(1)) / 9)
+			!Jfe calculate
+			emission_current(1) = 1.51414d-6 * (enhance_field(1)**2 / PM_work_fuction*t(1))* &
+			exp(-6.8309d9 * PM_work_fuction**(1.5_dp) * v(1) / enhance_field(1))
+			!handle emission electron  N=J*S*dt/q now N is real paticles number
+			number_elec(1) = emission_current(1) * PM_transverse_area * tt / UC_elem_charge
+			!due to electron emission,equal to that suface charge positive increase
+			PM_surChargeAtroot(1) = PM_surChargeAtroot(1) + number_elec(1)
+			!calculate mcroparticles ,i.e.N=N/initial/weight, assume new particle weight is initial weight
+			number_elec(1) = number_elec(1) / weight_initial
 
-                if (number_elec(1)>= 1) then   ! We have to make sure there is particle when we create it
-		    !> Creat electrons information: velocity and position, acceleration
-		    xx=PM_dellen(1)+RNG_uniform()*PM_delta_x
-		    pos = (/0.0_dp, 0.0_dp, xx/)
-		    accel(1:2) = 0.0_dp
-	      	    accel(3) = UC_elec_charge / UC_elec_mass * EF_get_at_pos(xx)
-		    do pp = 1, nint(number_elec(1))!rounding and change to integer in order to use do loop
-			    do nn = 1, 3 ! maxwell distribution to describe the particles velocity
-				temp =  RNG_uniform()
-				if (temp == 0.d0) temp = temp + UC_tiny  ! it cannot be zero
-				vel(nn) = sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
-					    & sin(2.d0 * UC_pi * RNG_uniform())
-			    end do
-		       	    call PC_create_part(pos, vel, accel, weight_initial)   
-		    end do
-		endif	
-	end if
+			if (number_elec(1)>= 1) then   ! We have to make sure there is particle when we create it
+				do pp = 1, nint(number_elec(1))!rounding and change to integer in order to use do loop
+				!> Creat electrons information: velocity and position, acceleration
+					if(mod(pp,2)/=0) then
+						xx=PM_dellen(1)+RNG_uniform()*PM_delta_x
+						pos = (/0.0_dp, 0.0_dp, xx/)
+						accel(1:2) = 0.0_dp
+						accel(3) = UC_elec_charge / UC_elec_mass * EF_get_at_pos(xx)
+						! maxwell distribution to describe the particles velocity
+						temp =  RNG_uniform()
+						if (temp == 0.d0) temp = temp + UC_tiny  ! it cannot be zero
+						vel(1) = sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& sin(2.d0 * UC_pi * RNG_uniform())
+						vel(2) = sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& cos(2.d0 * UC_pi * RNG_uniform())
+						temp =  RNG_uniform()
+						if (temp == 0.d0) temp = temp + UC_tiny  ! it cannot be zero
+						vel(3)=sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& sin(2.d0 * UC_pi * RNG_uniform())
+						old_vel=sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& cos(2.d0 * UC_pi * RNG_uniform())
+						call PC_create_part(pos, vel, accel, weight_initial)
+					endif
+					if(mod(pp,2)==0) then
+					! initialize second macroparticle
+						xx=PM_dellen(1)+RNG_uniform()*PM_delta_x
+						pos = (/0.0_dp, 0.0_dp, xx/)
+						accel(1:2) = 0.0_dp
+						accel(3) = UC_elec_charge / UC_elec_mass * EF_get_at_pos(xx)
+						vel(1) = old_vel
+						temp =  RNG_uniform()
+						if (temp == 0.d0) temp = temp + UC_tiny  ! it cannot be zero
+						vel(2) = sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& sin(2.d0 * UC_pi * RNG_uniform())
+						vel(3) = sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& cos(2.d0 * UC_pi * RNG_uniform())
+						call PC_create_part(pos, vel, accel, weight_initial)  
+					endif 
+				end do
+			endif	
+		end if
 
         if ( abs(dbd_field(2))>1.0d9) then 
-		enhance_field(2)=PM_field_factor*dbd_field(2) 
-		variable_y(2)=3.79d-5*sqrt(enhance_field(2))/PM_work_fuction
-		t(2)=1-variable_y(2)**2*(1-dlog(variable_y(2))/3)
-		v(2)=1+variable_y(2)**2*(1-dlog(variable_y(2))/9)
-		emission_current(2)=1.51414d-6*enhance_field(2)**2/(PM_work_fuction*t(2))*&
-		 exp(-6.8309d9*PM_work_fuction**1.5*v(2)/enhance_field(2))
-		number_elec(2)=emission_current(2)*PM_transverse_area*tt/UC_elem_charge
-		PM_surChargeAtroot(2) = PM_surChargeAtroot(2) + number_elec(2)
-		number_elec(2)=number_elec(2)/weight_initial
-		if (number_elec(2)>= 1) then   ! We have to make sure there is particle when we create it
-		    !> Creat electrons information: velocity and position 
-		    xx=PM_delta_x * (PM_grid_size - 1)-PM_dellen(2)-RNG_uniform()*PM_delta_x
-		    pos = (/0.0_dp, 0.0_dp, xx/)
-		    accel(1:2) = 0.0_dp
-	      	    accel(3) = UC_elec_charge / UC_elec_mass * EF_get_at_pos(xx)
-		    do pp = 1, nint(number_elec(2))
-			    do nn = 1, 3
-				temp =  RNG_uniform()
-				if (temp == 0.d0) temp = temp + UC_tiny  ! it cannot be zero
-				vel(nn) = sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
-					    & sin(2.d0 * UC_pi * RNG_uniform())
-			    end do
-			    call PC_create_part(pos, vel, accel, weight_initial)   
-		    end do
+			enhance_field(2)=PM_field_factor*dbd_field(2) 
+			variable_y(2)=3.79d-5*sqrt(enhance_field(2))/PM_work_fuction
+			t(2)=1-variable_y(2)**2*(1-dlog(variable_y(2))/3)
+			v(2)=1+variable_y(2)**2*(1-dlog(variable_y(2))/9)
+			emission_current(2)=1.51414d-6*enhance_field(2)**2/(PM_work_fuction*t(2))*&
+			exp(-6.8309d9*PM_work_fuction**1.5*v(2)/enhance_field(2))
+			number_elec(2)=emission_current(2)*PM_transverse_area*tt/UC_elem_charge
+			PM_surChargeAtroot(2) = PM_surChargeAtroot(2) + number_elec(2)
+			number_elec(2)=number_elec(2)/weight_initial
+			if (number_elec(2)>= 1) then   ! We have to make sure there is particle when we create it
+				!> Creat electrons information: velocity and position
+				do pp = 1, nint(number_elec(1))!rounding and change to integer in order to use do loop
+				!> Creat electrons information: velocity and position, acceleration
+					if(mod(pp,2)/=0) then 
+							xx=PM_delta_x * (PM_grid_size - 1)-PM_dellen(2)-RNG_uniform()*PM_delta_x
+							pos = (/0.0_dp, 0.0_dp, xx/)
+						accel(1:2) = 0.0_dp
+							accel(3) = UC_elec_charge / UC_elec_mass * EF_get_at_pos(xx)
+							! maxwell distribution to describe the particles velocity
+							temp =  RNG_uniform()
+						if (temp == 0.d0) temp = temp + UC_tiny  ! it cannot be zero
+						vel(1) = sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& sin(2.d0 * UC_pi * RNG_uniform())
+							vel(2) = sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& cos(2.d0 * UC_pi * RNG_uniform())
+							temp =  RNG_uniform()
+						if (temp == 0.d0) temp = temp + UC_tiny  ! it cannot be zero
+							vel(3)=sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& sin(2.d0 * UC_pi * RNG_uniform())
+						old_vel=sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& cos(2.d0 * UC_pi * RNG_uniform())
+							call PC_create_part(pos, vel, accel, weight_initial)
+					endif
+					if(mod(pp,2)==0) then
+					! initialize second macroparticle
+						xx=PM_delta_x * (PM_grid_size - 1)-PM_dellen(2)-RNG_uniform()*PM_delta_x
+						pos = (/0.0_dp, 0.0_dp, xx/)
+							accel(1:2) = 0.0_dp
+								accel(3) = UC_elec_charge / UC_elec_mass * EF_get_at_pos(xx)
+						vel(1) = old_vel
+						temp =  RNG_uniform()
+						if (temp == 0.d0) temp = temp + UC_tiny  ! it cannot be zero
+						vel(2) = sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& sin(2.d0 * UC_pi * RNG_uniform())
+									vel(3) = sqrt(-log(temp) * 2.d0 * UC_boltzmann_const * elec_temp / UC_elec_mass ) * &
+						& cos(2.d0 * UC_pi * RNG_uniform())
+							call PC_create_part(pos, vel, accel, weight_initial)  
+					endif
+				end do 
+			endif
 		endif
-	endif
-   end subroutine PM_field_emission
+    end subroutine PM_field_emission
 
    subroutine PM_initialize(cross_secs, cross_secs_for_ions, ntasks)
       use m_config
