@@ -69,6 +69,7 @@ program dbd_1d
    real(dp)          :: timeStartEva
    logical           :: flagfindTime, outputTimeEvaPra
    integer           :: ave_num_timeEva
+   integer           :: sim_voltage_type
    integer           :: div_num_timeEva
    real(dp)          :: peroid 
    real(dp)          :: outputMoment
@@ -191,7 +192,13 @@ program dbd_1d
         flagfindTime     = .true.
         ave_num_timeEva  = CFG_get_int("sim_ave_num_timeEva")
         div_num_timeEva  = CFG_get_int("sim_div_num_one_peroid")
-        peroid           = 1.d0 / CFG_get_real("sim_voltage_AC_fre")
+		sim_voltage_type = CFG_get_int("sim_voltage_type")
+		select case(sim_voltage_type)
+		case(1)!use DC voltage
+			peroid   = 1.d0 / CFG_get_real("sim_voltage_AC_fre")
+		case(2)!use pulse voltage
+			peroid   = 1.d0 / CFG_get_real("sim_voltage_pulse_fre")
+		end select
         outputMoment     = 0.d0
         cnrt             = 0
 
@@ -638,12 +645,19 @@ contains
       !Voltage parameters: Anbang: if we want to use voltage as boundary conditions
       call CFG_add("sim_use_voltage", .false., "Whether to use voltage")
       CALL CFG_add("sim_applied_voltage", (/10.0D3/), "The potential used at left boundary at the specified times.", .true.)
-      CALL CFG_add("sim_voltage_type", 0, "The type of applied voltage: 0- DC, 1- AC")
+      CALL CFG_add("sim_voltage_type", 0, "The type of applied voltage: 0- DC, 1- AC,2- pulse")
 
       ! amplitude and frequency for AC
       CALL CFG_add("sim_voltage_AC_max ", 4.5d2, "The amplitude of AC, unit: V")
       CALL CFG_add("sim_voltage_AC_fre ", 13.56d6, "The frequency of AC, unit: Hz")
-
+	   
+	  ! amplitude and frequency for pulse
+	  CALL CFG_add("sim_voltage_pulse_max ", 4.5d2, "The amplitude of pulse, unit: V")
+      CALL CFG_add("sim_voltage_pulse_fre ", 13.56d6, "The frequency of pulse, unit: Hz")
+	  CALL CFG_add("sim_voltage_rising_edge ", 1.5d-8, "The amplitude of AC, unit: s")
+      CALL CFG_add("sim_voltage_falling_edge ", 1.5d-8, "The frequency of AC, unit: s")
+	  CALL CFG_add("sim_voltage_platform ", 1.5d-8, "The amplitude of AC, unit: s")
+	  
       ! Initial conditions
       call CFG_add("init_cond_name", "gaussian", "The type of initial condition")
       call CFG_add("init_elec_dens", 1.0d17 , "The number of initial ion pairs")

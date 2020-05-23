@@ -16,8 +16,11 @@ module m_efield_1d
   logical               :: EF_is_constant
   logical               :: EF_use_voltage
   integer               :: voltage_type   ! decide AC or DC
-  integer, parameter    :: voltage_DC = 0, voltage_AC = 1
+  integer, parameter    :: voltage_DC = 0, voltage_AC = 1, voltage_pulse = 2
   real(dp)              :: voltage_AC_max, voltage_AC_fre   ! the amplitude and frequency of the capactive voltage 
+  ! the amplitude,time  and frequency of the pulse voltage
+  real(dp)              :: voltage_pulse_falling_edge,voltage_pulse_fre,voltage_pulse_max
+  real(dp)              :: voltage_pulse_platform,voltage_pulse_rising_edge
   integer               :: EF_DBD_type
   real(dp)              :: EF_DBD_len(2)
   real(dp)              :: EF_epsDBD(2)   ! the permitivity of two dielectrics
@@ -67,7 +70,12 @@ contains
     EF_use_voltage = CFG_get_logic("sim_use_voltage")
     voltage_type   = CFG_get_int("sim_voltage_type")
     voltage_AC_max = CFG_get_real("sim_voltage_AC_max")
-    voltage_AC_fre = CFG_get_real("sim_voltage_AC_fre")    
+    voltage_AC_fre = CFG_get_real("sim_voltage_AC_fre") 
+	voltage_pulse_max = CFG_get_real("sim_voltage_pulse_max ")
+    voltage_pulse_fre = CFG_get_real("sim_voltage_pulse_fre ")
+	voltage_pulse_rising_edge = CFG_get_real("sim_voltage_rising_edge ")
+    voltage_pulse_falling_edge = CFG_get_real("sim_voltage_falling_edge ")
+	voltage_pulse_platform = CFG_get_real("sim_voltage_platform ")
     EF_useDBD      = CFG_get_logic("sim_DBD")
  
     ! permitivity of dielectrics
@@ -160,6 +168,18 @@ contains
             allocate(EF_values(EF_grid_size+1)) 
             ! here the voltage is: U = U0 * sin( 2 * pi * f * t)
             EF_values = - voltage_AC_max * sin (2.d0 * UC_pi * voltage_AC_fre * 0.d0) / (EF_delta_x * (EF_grid_size - 1))
+
+            !left and right boundary: efield is zero
+            EF_values(1) = 0.d0
+            EF_values(EF_grid_size+1) = 0.d0
+
+            ! if we use voltage boundary conditions, we only set potential as zero initially
+            allocate(EP_values(EF_grid_size))
+            EP_values = 0.d0
+		case (voltage_pulse)
+			allocate(EF_values(EF_grid_size+1)) 
+            ! here the voltage is: U = U0 * sin( 2 * pi * f * t)
+            EF_values = 0.d0
 
             !left and right boundary: efield is zero
             EF_values(1) = 0.d0
@@ -644,13 +664,29 @@ contains
 
          real(dp), intent(out) :: bd_pot(2)
          real(dp), intent(in)  :: time
-
+		 real(dp)              :: sim_time
+		 integer               :: n
+		 
          ! set boundary conditions at the left electrode: powered electrode
          select case (voltage_type)
          case (voltage_DC)
               bd_pot(1) = EL_getvoltage(time) 
          case (voltage_AC)
               bd_pot(1) = voltage_AC_max * sin(2.d0 * UC_pi * voltage_AC_fre * time)
+		 case (voltage_pulse)
+			  n=int(time * voltage_pulse_fre)
+			  sim_time = time
+			  sim_time = sim_time - n / voltage_pulse_fre
+			  if(sim_time < voltage_pulse_rising_edge ) then
+				bd_pot(1) = sim_time * voltage_pulse_max / voltage_pulse_rising_edge
+			  else if(sim_time < (voltage_pulse_rising_edge + voltage_pulse_platform)) then
+				bd_pot(1) = voltage_pulse_max
+			  else if(sim_time < (voltage_pulse_rising_edge + voltage_pulse_platform + voltage_pulse_falling_edge)) then
+				bd_pot(1) = voltage_pulse_max - (sim_time - (voltage_pulse_rising_edge + voltage_pulse_platform))*&
+				(voltage_pulse_max / voltage_pulse_falling_edge)
+			  else 
+			  bd_pot(1) = 0.d0
+			  end if 
          end select 
          
          ! right electrode: grounded electrode
