@@ -653,7 +653,7 @@ contains
 	   
 	  ! amplitude and frequency for pulse
 	  CALL CFG_add("sim_voltage_pulse_max ", 4.5d2, "The amplitude of pulse, unit: V")
-      CALL CFG_add("sim_voltage_pulse_fre ", 13.56d6, "The frequency of pulse, unit: Hz")
+      CALL CFG_add("sim_voltage_pulse_fre ", 2d6, "The frequency of pulse, unit: Hz")
 	  CALL CFG_add("sim_voltage_rising_edge ", 1.5d-8, "The amplitude of AC, unit: s")
       CALL CFG_add("sim_voltage_falling_edge ", 1.5d-8, "The frequency of AC, unit: s")
 	  CALL CFG_add("sim_voltage_platform ", 1.5d-8, "The amplitude of AC, unit: s")

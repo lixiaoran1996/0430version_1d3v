@@ -676,7 +676,7 @@ contains
 		 case (voltage_pulse)
 			  n=int(time * voltage_pulse_fre)
 			  sim_time = time
-			  sim_time = sim_time - n / voltage_pulse_fre
+			  sim_time = sim_time - real(n,dp) / voltage_pulse_fre
 			  if(sim_time < voltage_pulse_rising_edge ) then
 				bd_pot(1) = sim_time * voltage_pulse_max / voltage_pulse_rising_edge
 			  else if(sim_time < (voltage_pulse_rising_edge + voltage_pulse_platform)) then
