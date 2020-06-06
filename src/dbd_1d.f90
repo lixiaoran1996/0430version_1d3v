@@ -54,7 +54,7 @@ program dbd_1d
    real(dp)          :: time_now, time_start
    real(dp)          :: apm_increase
    
-   real(dp)          ::potential_left_bound
+   real(dp)          ::potential_left_bound,potential_gap, potential_dielectric
 
    logical            :: do_apm, do_apm_ion, output_numerical_para
    logical            :: use_DBD
@@ -76,7 +76,7 @@ program dbd_1d
    integer           :: cnrt
 
     ! parameters for current output
-    real(dp), allocatable  :: dis_curr(:), conduct_curr(:,:), tot_curr(:)
+    real(dp), allocatable  :: dis_curr(:), conduct_curr(:,:), tot_curr(:),tot_curr_density(:)
     integer     :: time_para_output_interval 
    ! for output electric field
     real(dp), allocatable :: efield_ix(:)
@@ -419,7 +419,7 @@ program dbd_1d
         !Anbang: Her we set if we need to use dbd, we have to calculate the surface charge
         if (use_DBD) then
             call PM_get_surface_charge_density(dt)
-			call PM_field_emission(dt)
+
             call PM_collectsurfChargeAtRoot(myrank, root)  ! the charge is collected at root
         end if
 
@@ -557,12 +557,13 @@ program dbd_1d
                 if (mod(steps + 1, time_para_output_interval)==0 .and. time_para_output_interval /= 1)  call EF_get_old_efield()
                 if (mod(steps, time_para_output_interval)==0) then
                     potential_left_bound = EF_get_potential_at_bound()
+					call EF_get_Gap_and_dielectric_potential(potential_gap , potential_dielectric)
                     ! calculate current
-                    call PM_calculate_curr(dis_curr, conduct_curr, tot_curr, dt)
+                    call PM_calculate_curr(dis_curr, conduct_curr, tot_curr,tot_curr_density,dt)
                     if (time_para_output_interval == 1) call EF_get_old_efield()  !if we sameple every time step, we pass the old field here
                     if (steps == 0) then ! if at time zero, we set the dis_curr = 0.0
                         dis_curr = 0.d0
-                        tot_curr(:) = conduct_curr(1,:) + conduct_curr(2,:)
+                        tot_curr(:) = conduct_curr(1,:) + conduct_curr(2,:) 
                     end if
 
                     ! get electric field at index points
@@ -572,10 +573,10 @@ program dbd_1d
 !                         & dis_curr,tot_curr, conduct_curr(1,1:size(dis_curr)), conduct_curr(2, 1:size(dis_curr))
 
                     ! output time dependent parameters during a certain time_now
-                    if (mod(steps, 100) == 0) then
+                    if (mod(steps, 1) == 0) then
                         call PM_get_max_dens(max_dens,sur_all)
-                        write(my_unit, *) sim_time, potential_left_bound, n_elec_real_sum, n_ion_real_sum, &
-                            & tot_curr(1), tot_curr(4), max_dens, sur_all
+                        write(my_unit, *) sim_time,potential_left_bound,potential_gap,potential_dielectric,n_elec_real_sum,&
+                            & n_ion_real_sum,tot_curr_density(1), tot_curr_density(4), max_dens, sur_all
                     end if
 
                 end if

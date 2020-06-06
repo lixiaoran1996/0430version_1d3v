@@ -1672,13 +1672,13 @@ contains
 
 !!! anbang: new added staff, for current
   ! anbang: calculate the conducting,displacement and total current
-   subroutine PM_calculate_curr(dis_curr, conduct_curr, tot_curr, dt)
+   subroutine PM_calculate_curr(dis_curr, conduct_curr, tot_curr,tot_curr_density, dt)
 
         use m_units_constants
         use m_efield_1d
 
         real(dp), intent(out),allocatable :: dis_curr(:)
-        real(dp), intent(out), allocatable :: conduct_curr(:,:), tot_curr(:)
+        real(dp), intent(out), allocatable :: conduct_curr(:,:), tot_curr(:),tot_curr_density(:)
         real(dp), intent(in)  :: dt
         integer               :: indx(4)
         integer               :: j
@@ -1688,11 +1688,13 @@ contains
         allocate(dis_curr(size(indx)))
         allocate(conduct_curr(2, size(indx)))
         allocate(tot_curr(size(indx)))
+		allocate(tot_curr_density(size(indx)))
         
         call EF_displace_currtent_at(dt, dis_curr, PM_transverse_area)
 
         conduct_curr = 0.d0
         tot_curr = 0.d0
+		tot_curr_density=0.d0
 
         do j = 1, size(indx)
             ! for electron
@@ -1703,6 +1705,7 @@ contains
 
             ! total current
             tot_curr(j) = conduct_curr(1,j) + conduct_curr(2,j) + dis_curr(j)
+			tot_curr_density(j) = tot_curr(j) / PM_transverse_area
         end do           
    end subroutine PM_calculate_curr
 

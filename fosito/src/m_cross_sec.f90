@@ -37,7 +37,7 @@ module m_cross_sec
 
    integer, parameter :: CS_attach_t = 1, CS_elastic_t = 2, CS_excite_t = 3, CS_ionize_t = 4
    integer, parameter :: max_num_cols_per_gas = 50
-   integer, parameter :: max_num_rows = 300
+   integer, parameter :: max_num_rows = 1000
    integer            :: CS_num_colls_found = 0
 
    ! Public variables

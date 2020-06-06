@@ -44,6 +44,7 @@ module m_efield_1d
   public :: EF_get_boundary_potential
   public :: EF_get_efield_index
   public :: EF_get_values_dbd
+  public :: EF_get_Gap_and_dielectric_potential
 
 
 contains
@@ -385,6 +386,23 @@ contains
   real(dp) function EF_get_potential_at_bound () ! anbang: give the potential value of the left bound
       EF_get_potential_at_bound = EP_values(1)
   end function EF_get_potential_at_bound
+	
+  subroutine EF_get_Gap_and_dielectric_potential(EF_gap_potential , EF_dielectric_potential)
+	real(dp), intent(out) :: EF_gap_potential , EF_dielectric_potential
+	if (EF_useDBD) then 
+		select case(EF_DBD_type)
+		case(1)
+			EF_dielectric_potential=EP_values(1)-EP_values(EF_DBD_index(1))
+			EF_gap_potential=EP_values(EF_DBD_index(1))-EP_values(EF_grid_size)
+		case(2)
+			EF_dielectric_potential=EP_values(EF_DBD_index(2))-EP_values(EF_grid_size)
+			EF_gap_potential=EP_values(1)-EP_values(EF_DBD_index(2))
+		case(3)
+			EF_gap_potential=EP_values(EF_DBD_index(1))-EP_values(EF_DBD_index(2))
+			EF_dielectric_potential = EP_values(1) - EP_values(EF_grid_size)-EF_gap_potential
+		end select
+	end if	
+  end subroutine EF_get_Gap_and_dielectric_potential
 
     !-------------------------------------------------------------------------------
     ! Subroutine for solving the Poisson equation without dielectric
