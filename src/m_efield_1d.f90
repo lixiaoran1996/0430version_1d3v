@@ -52,7 +52,7 @@ contains
   subroutine EF_get_values_dbd(out_efield)
     real(dp), intent(out) :: out_efield(2)
     out_efield(1) = EF_values(EF_DBD_index(1) + 1)
-    out_efield(1) = EF_values(EF_DBD_index(2))
+    out_efield(2) = EF_values(EF_DBD_index(2))
   end subroutine EF_get_values_dbd
 
   subroutine EF_initialize()
