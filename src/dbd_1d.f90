@@ -194,7 +194,7 @@ program dbd_1d
         div_num_timeEva  = CFG_get_int("sim_div_num_one_peroid")
 		sim_voltage_type = CFG_get_int("sim_voltage_type")
 		select case(sim_voltage_type)
-		case(1)!use DC voltage
+		case(1)!use AC voltage
 			peroid   = 1.d0 / CFG_get_real("sim_voltage_AC_fre")
 		case(2)!use pulse voltage
 			peroid   = 1.d0 / CFG_get_real("sim_voltage_pulse_fre")

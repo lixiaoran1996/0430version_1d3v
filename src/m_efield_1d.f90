@@ -401,6 +401,9 @@ contains
 			EF_gap_potential=EP_values(EF_DBD_index(1))-EP_values(EF_DBD_index(2))
 			EF_dielectric_potential = EP_values(1) - EP_values(EF_grid_size)-EF_gap_potential
 		end select
+    else
+    EF_dielectric_potential = 0
+    EF_gap_potential = EP_values(1) - EP_values(EF_grid_size)
 	end if	
   end subroutine EF_get_Gap_and_dielectric_potential
 
