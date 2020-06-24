@@ -10,6 +10,7 @@ module m_init_cond_1d
    integer            :: INIT_type          = -1
    real(dp)           :: INIT_location
    real(dp)           :: INIT_width
+   real(dp)           :: INIT_background_density
    real(dp)           :: INIT_elec_dens
    real(dp)           :: INIT_elec_energy
    real(dp)           :: INIT_ion_dens
@@ -82,6 +83,7 @@ contains
       INIT_width = CFG_get_real("init_width")
       INIT_location = CFG_get_real("init_rel_pos") * domain_length
       INIT_elec_dens = CFG_get_real("init_elec_dens")
+      INIT_background_density = CFG_get_real("init_background_density")
 
       INIT_elec_temp = CFG_get_real("init_elec_tem")
       INIT_ion_temp  = CFG_get_real("init_ion_tem")
@@ -188,12 +190,12 @@ contains
          if (abs(xx - INIT_location) < INIT_width) then
             elec_dens = INIT_elec_dens
          else
-            elec_dens = 0.0_dp
+            elec_dens = INIT_background_density
          end if
       case (INIT_background_type)
          elec_dens = INIT_elec_dens
       case default
-         elec_dens = 0.0_dp
+         elec_dens = INIT_background_density
          call ERR_show("m_initial_cond is being used without proper initialization")
       end select
 
