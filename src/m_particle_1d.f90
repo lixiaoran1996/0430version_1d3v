@@ -1313,16 +1313,26 @@ contains
         real(dp)                :: surfIonFlux(2)
         integer                 :: dbd_index(2),dbd_type
 	PM_surChargeAtnodes=0.d0
-
+	PM_surElec_flux = 0.d0        ! which records electrons accumulated on surface this time step
+	PM_surIon_flux = 0.d0                         ! which records ions accumulated on surface this time step
+	
 	call PC_curr_cal(PM_surChargeAtnodes)
+	call PC_sur_elec_cal(PM_surElec_flux)
+	call PC_sur_ion_cal(PM_surIon_flux)
 	PM_surChargeAtnodes = UC_elem_charge*PM_surChargeAtnodes/PM_transverse_area
+	PM_surElec_flux = UC_elem_charge*PM_surElec_flux/PM_transverse_area
+	PM_surIon_flux = UC_elem_charge*PM_surIon_flux/PM_transverse_area
         call EF_get_DBD_index_and_type(dbd_index, dbd_type)
 
     select case (dbd_type)
     case(1)
         PM_surChargeAtnodes(2) = 0.d0
+        PM_surElec_flux(2) = 0.d0
+        PM_surIon_flux(2) = 0.d0
     case(2)
         PM_surChargeAtnodes(1) = 0.d0
+        PM_surElec_flux(1) = 0.d0
+        PM_surIon_flux(1) = 0.d0
     end select
 !         print *, "PM_surChargeAtnodes =", PM_surChargeAtnodes
         
@@ -1712,11 +1722,11 @@ contains
     ! get the maximum density of electrons and ions
     subroutine PM_get_max_dens(max_dens,sur_all)
         real(dp), intent(out) :: max_dens(2)
-    real(dp), intent(out) :: sur_all(2)
+    real(dp), intent(out) :: sur_all(6)
         
         max_dens(1) = maxval(PM_vars(:,PM_iv_elec))
         max_dens(2) = maxval(PM_vars(:,PM_iv_ion))
-    sur_all=PM_surChargeAtroot
+    sur_all=PM_surChargeAtroot, PM_surElec_flux, PM_surIon_flux
     end subroutine PM_get_max_dens
 
 end module m_particle_1d

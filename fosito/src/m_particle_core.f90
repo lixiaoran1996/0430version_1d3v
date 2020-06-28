@@ -47,7 +47,10 @@ module m_particle_core
    !****************************************************************
 
    !> The mass of the particles in the simulation (electrons, ions)
-    real(dp) :: PC_particle_elec_mass, PC_particle_ion_mass, PC_reduced_mass,PC_Q_bd(2)
+    real(dp) :: PC_particle_elec_mass, PC_particle_ion_mass, PC_reduced_mass
+    
+    !> The surface particle number (total, electrons, ions)
+    real(dp) :: PC_Q_bd(2), PC_elec_bd(2), PC_ion_bd(2)
 
    !> The maximum number of particles (electrons, ions)
    integer  :: PC_max_num_part, PC_max_num_ion_part
@@ -244,7 +247,7 @@ module m_particle_core
    public :: PC_split_part, PC_ion_split_part
    public :: PC_check_pos_particles
    public :: PC_check_weight_particles
-    public :: PC_histogram,PC_curr_cal
+   public :: PC_histogram,PC_curr_cal, PC_sur_ion_cal, PC_sur_elec_cal
    public :: PC_output_ionization_number
 
    !MPI
@@ -296,7 +299,9 @@ contains
       PC_max_num_part  = nPartMax
       allocate( PC_particles(PC_max_num_part) )
       PC_num_part      = 0
-    PC_Q_bd=0.D0
+      PC_Q_bd=0.D0
+      PC_elec_bd = 0.D0
+      PC_ion_bd = 0.D0
       PC_gas_tem = gas_tem
       print *, "the temperature of gas:", PC_gas_tem
       PC_particle_atom_mass= massAtom
@@ -390,6 +395,19 @@ contains
     grid_curr_out=PC_Q_bd
     PC_Q_bd=0.d0
     end subroutine PC_curr_cal
+    
+    subroutine PC_sur_elec_cal(sur_charge_out)
+    real(dp), intent(out) :: sur_charge_out(2)
+    sur_charge_out = PC_elec_bd
+    PC_elec_bd = 0.d0
+    end subroutine PC_sur_elec_cal
+    
+    subroutine PC_sur_ion_cal(sur_charge_out)
+    real(dp), intent(out) :: sur_charge_out(2)
+    sur_charge_out = PC_ion_bd
+    PC_ion_bd = 0.d0
+    end subroutine PC_sur_ion_cal
+    
    !> Loop over all the particles, and for each set the time left 'dt' for this step.
    !! Then they are fed to the move_and_collide() routine, which advances them in time
    subroutine PC_advance(dt)
@@ -2559,6 +2577,7 @@ contains
             case(1)   ! absorb
                 call PC_killElec(ll)
             PC_Q_bd(1)=PC_Q_bd(1)-PC_particles(ll)%weight
+            PC_elec_bd(1) = PC_elec_bd(1) + PC_particles(ll)%weight
             case(2)   ! partial reflection
                 if (RNG_uniform() <= PC_coElecRefl(1)) then
                     !call specularReflectionForElec(ll)
@@ -2566,6 +2585,7 @@ contains
                 else
                      call PC_killElec(ll)
                 PC_Q_bd(1)=PC_Q_bd(1)-PC_particles(ll)%weight
+                PC_elec_bd(1) = PC_elec_bd(1) + PC_particles(ll)%weight
                 end if
             end select
         else if (pos >= PC_posBD(2)) then
@@ -2573,6 +2593,7 @@ contains
             case(1)   ! absorb
                 call PC_killElec(ll)
             PC_Q_bd(2)=PC_Q_bd(2)-PC_particles(ll)%weight
+            PC_elec_bd(2) = PC_elec_bd(2) + PC_particles(ll)%weight
             case(2)   ! partial reflection
                 if (RNG_uniform() <= PC_coElecRefl(2)) then
                     !call specularReflectionForElec(ll)
@@ -2580,6 +2601,7 @@ contains
                 else
                     call PC_killElec(ll)
                 PC_Q_bd(2)=PC_Q_bd(2)-PC_particles(ll)%weight
+                PC_elec_bd(2) = PC_elec_bd(2) + PC_particles(ll)%weight
                 end if
             end select
         else
@@ -2679,6 +2701,7 @@ contains
             case(1)   ! absorb
                 call PC_killIon(ll)
             PC_Q_bd(1)=PC_Q_bd(1)+PC_ion_particles(ll)%weight
+            PC_ion_bd(1) = PC_ion_bd(1) + PC_ion_particles(ll)%weight
             case(2)   ! reflection
                 call specularReflectionForion(ll)
             case(3)  
@@ -2689,6 +2712,7 @@ contains
             case(1)   ! absorb
                 call PC_killIon(ll)
             PC_Q_bd(2)=PC_Q_bd(2)+PC_ion_particles(ll)%weight
+            PC_ion_bd(2) = PC_ion_bd(2) + PC_ion_particles(ll)%weight
             case(2)   ! reflection
                 call specularReflectionForion(ll)
             case(3)  
@@ -2763,10 +2787,12 @@ contains
                 ! a electron is emmited from the left wall
                 call PC_create_second_elec(ll)
             PC_Q_bd(1)=PC_Q_bd(1)+2.d0*PC_ion_particles(ll)%weight
+            PC_ion_bd(1) = PC_ion_bd(1) + 2.d0*PC_ion_particles(ll)%weight
                 !print *, "the left boundary has a sendary electron:", PC_particles(PC_num_part)%v
             else
                 call PC_killIon(ll)
             PC_Q_bd(1)=PC_Q_bd(1)+PC_ion_particles(ll)%weight
+            PC_ion_bd(1) = PC_ion_bd(1) + PC_ion_particles(ll)%weight
             end if
         else if (PC_ion_particles(ll)%x(3) >= PC_posBD(2)) then
             if (RNG_uniform() <= PC_coSecElec(2)) then
@@ -2775,9 +2801,11 @@ contains
                 call PC_create_second_elec(ll)
                 !print *, "the right boundary has a sendary electron:", PC_particles(PC_num_part)%v
             PC_Q_bd(2)=PC_Q_bd(2)+2.d0*PC_ion_particles(ll)%weight
+            PC_ion_bd(2) = PC_ion_bd(2) + 2.d0*PC_ion_particles(ll)%weight
             else
                 call PC_killIon(ll)
             PC_Q_bd(2)=PC_Q_bd(2)+PC_ion_particles(ll)%weight
+            PC_ion_bd(2) = PC_ion_bd(2) + PC_ion_particles(ll)%weight
             end if 
          else
             print *, "Error(secondaryElectronEmissonForIon):the ion is still in the domain? "

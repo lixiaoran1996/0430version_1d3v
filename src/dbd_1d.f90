@@ -42,7 +42,7 @@ program dbd_1d
    integer           :: info_cntr
    integer           :: prev_apm_elec_part, prev_apm_ion_part
    integer           :: n_elec_sim_sum, n_ion_sim_sum
-   real(dp)          :: n_elec_real_sum, n_ion_real_sum,sur_all(2)
+   real(dp)          :: n_elec_real_sum, n_ion_real_sum,sur_all(6)
    integer           :: timeStepIonOverElec
 
    integer           :: stepIons
