@@ -51,6 +51,8 @@ module m_particle_core
     
     !> The surface particle number (total, electrons, ions)
     real(dp) :: PC_Q_bd(2), PC_elec_bd(2), PC_ion_bd(2)
+    
+    real(dp) :: PC_flux(:)
 
    !> The maximum number of particles (electrons, ions)
    integer  :: PC_max_num_part, PC_max_num_ion_part
@@ -247,7 +249,7 @@ module m_particle_core
    public :: PC_split_part, PC_ion_split_part
    public :: PC_check_pos_particles
    public :: PC_check_weight_particles
-   public :: PC_histogram,PC_curr_cal, PC_sur_ion_cal, PC_sur_elec_cal
+   public :: PC_histogram,PC_curr_cal, PC_sur_ion_cal, PC_sur_elec_cal, PC_out_flux
    public :: PC_output_ionization_number
 
    !MPI
@@ -313,6 +315,9 @@ contains
       PC_coElecRefl = coElecRefl
       PC_BWflag     = schemeBWSC   ! the flag for backwardscattering: 1 turner; 2 com/lab frame transfer
       PC_merge_scheme = scheme_Merge
+      
+      allocate(PC_flux(grid_size+1))
+      PC_flux = 0.D0
 
      ! print *, "PC_coElecRefl = ", PC_coElecRefl
       
@@ -414,6 +419,7 @@ contains
       real(dp), intent(IN)      :: dt
       integer                   :: ll
       real(dp)                  :: tempDt
+      real(dp)                  :: old_loc, new_loc
         
       PC_ionization_number = 0.d0
 
@@ -422,12 +428,16 @@ contains
       if (PC_coll%num > 0) then ! There are collisions
          ll = 1
          do while (ll <= PC_num_part)
+            old_loc = PC_particles(II)%x(3)
             call move_and_collide(ll)
+            new_loc = PC_particles(II)%x(3)
+            call add_PC_flux(old_loc,new_loc,PC_particles(II)%weight)
             ll = ll + 1
          end do
          call remove_dead_particles()
       else                      ! There are no collisions
          do ll = 1, PC_num_part
+            old_loc = PC_particles(II)%x(3)
             tempDt = PC_particles(ll)%t_left
             call advance_particle(ll, PC_particles(ll)%t_left)
             !> boundary conditions: absorption
@@ -435,6 +445,8 @@ contains
                 call PC_boundary_for_electron(ll, PC_particles(ll)%x(3), tempDt)
             !    print *, "One electron is out:", PC_particles(ll)%x
             end if
+            new_loc = PC_particles(II)%x(3)
+            call add_PC_flux(old_loc,new_loc,PC_particles(II)%weight)
          end do
          call remove_dead_particles()
       end if
@@ -443,6 +455,35 @@ contains
      PC_ionization_number = PC_ionization_number / dt
 
    end subroutine PC_advance
+   
+   subroutine add_PC_flux(old_loc, new_loc, weight)
+      real(dp), intent(in)    :: old_loc, new_loc, weight
+      integer                       :: old_ix, new_ix
+
+      call loc_to_index( old_loc, old_ix)
+      call loc_to_index( new_loc, new_ix)
+      if ( new_ix > old_ix) then
+      PC_flux(new_ix) =  PC_flux(new_ix) + weight
+      else if (new_ix < old_ix) then
+      PC_flux(old_ix) = PC_flux(old_ix) - weight
+      end if
+
+   end subroutine add_PC_flux
+   
+   subroutine loc_to_index(loc, low_ix)
+      real(dp), intent(in)    :: loc
+      integer, intent(inout) :: low_ix
+      real(dp)                :: temp
+      
+          temp   = loc * PM_inv_delta_x
+          low_ix = floor(temp) + 1
+   end subroutine loc_to_index
+   
+   subroutine PC_out_flux(grid_flux_out)
+       real(dp), intent(out) :: grid_flux_out(PC_grid_size+1)
+        grid_flux_out = PC_flux
+        PC_flux = 0.d0
+   end subroutine PC_out_flux
 
    !> Anbang: For ions
     !>Loop over all the particles, and for each set the time left 'dt' for this step.

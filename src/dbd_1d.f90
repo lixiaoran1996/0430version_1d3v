@@ -35,7 +35,7 @@ program dbd_1d
 
    character(len=80) :: sim_name, fluid_input_file, cfg_name, gas_mix_name, outTimeFile
 
-   integer,parameter :: my_unit = 1256 
+   integer,parameter :: my_unit = 1256, my_unit_flux = 2367 
    integer           :: sim_type
    integer           :: steps, n_steps_apm
    integer           :: output_cntr
@@ -43,6 +43,7 @@ program dbd_1d
    integer           :: prev_apm_elec_part, prev_apm_ion_part
    integer           :: n_elec_sim_sum, n_ion_sim_sum
    real(dp)          :: n_elec_real_sum, n_ion_real_sum,sur_all(6)
+   real(dp), allocatable          :: flux_all(:)
    integer           :: timeStepIonOverElec
 
    integer           :: stepIons
@@ -325,6 +326,10 @@ program dbd_1d
         open(unit = my_unit, file = outTimeFile , status = 'unknown')
         write (my_unit, *) "Here we output parameters information as a function of time"
         write (my_unit, *) "time", "potential"," n_elec", "n_ion","tot_curr(1)", "tot_curr(4)", "max_elec","max_ion", "sur_all"
+        
+        outTimeFile = "output/" // trim(sim_name) // "_fluxes.txt"
+        open(unit = my_unit_flux, file = outTimeFile , status = 'unknown')
+        write (my_unit_flux, *) "Here we output flux information as a function of time"
     end if
 
 
@@ -577,6 +582,9 @@ program dbd_1d
                         call PM_get_max_dens(max_dens,sur_all)
                         write(my_unit, *) sim_time,potential_left_bound,potential_gap,potential_dielectric,n_elec_real_sum,&
                             & n_ion_real_sum,tot_curr_density(1), tot_curr_density(4), max_dens, sur_all
+                            
+                        call PM_out_flux(flux_all)
+                        write(my_unit_flux,*) flux_all
                     end if
 
                 end if
@@ -598,7 +606,10 @@ program dbd_1d
    end do
    333 continue
 
-   if (myrank == root) close(my_unit)
+   if (myrank == root) then
+   close(my_unit)
+   close(my_unit_flux)
+   end if
 
    call MPI_FINALIZE(ierr)
 

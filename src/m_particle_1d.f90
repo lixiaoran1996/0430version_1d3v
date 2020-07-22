@@ -22,6 +22,8 @@ module m_particle_1d
    real(dp)              :: PM_grid_volume, PM_inv_grid_volume
    real(dp)              :: PM_vel_rel_weight, PM_part_per_cell
    
+   real(dp), allocatable :: PM_flux(:)
+   
    real(dp)              :: ionMassRatio  ! the mass ratio between ions and standard atoms
    real(dp)              :: atomMassRatio ! the mass ratio between simulated atoms and standard atoms
 
@@ -91,6 +93,7 @@ module m_particle_1d
    public   :: PM_output_aver_num_and_weight_per_cell
    public   :: PM_calculate_curr
    public   :: PM_get_max_dens
+   public   :: PM_out_flux
       ! parameter for field emission 
    public   :: PM_field_emission
 
@@ -258,6 +261,9 @@ contains
 
       allocate(PM_vars(PM_grid_size, PM_num_vars))
       PM_vars = 0.0_dp
+      
+      allocate(PM_flux(PM_grid_size+1))
+      PM_flux = 0.0_dp
 
       allocate(PM_pos_aver_data(PM_grid_size, 13))
       allocate(PM_phys_aver_data(6))
@@ -1722,11 +1728,19 @@ contains
     ! get the maximum density of electrons and ions
     subroutine PM_get_max_dens(max_dens,sur_all)
         real(dp), intent(out) :: max_dens(2)
-    real(dp), intent(out) :: sur_all(6)
+        real(dp), intent(out) :: sur_all(6)
         
         max_dens(1) = maxval(PM_vars(:,PM_iv_elec))
         max_dens(2) = maxval(PM_vars(:,PM_iv_ion))
     sur_all=PM_surChargeAtroot, PM_surElec_flux, PM_surIon_flux
     end subroutine PM_get_max_dens
+    
+    subroutine PM_out_flux(flux_all)
+        real(dp), intent(out) :: flux_all(PM_grid_size+1)
+        
+        call PC_out_flux(PM_flux)
+        flux_all = PM_flux
+   
+   end subroutine PM_out_flux
 
 end module m_particle_1d
