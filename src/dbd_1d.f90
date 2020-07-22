@@ -407,6 +407,7 @@ program dbd_1d
              if (mod(steps,timeStepIonOverElec) == 0 ) &
                & call PC_ion_collide(dt * timeStepIonOverElec)    
         else
+        print *," PM_advance"
             call PM_advance(dt)
             ! move the ions       
             if (mod(steps,timeStepIonOverElec) == 0 ) then

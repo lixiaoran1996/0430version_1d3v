@@ -88,10 +88,10 @@ apm_increase_factor = 1.2d8
 sim_rot_scheme = 1
 
 # whether we use verlet completely before collisions
-sim_do_verlet_before_coll = t
+sim_do_verlet_before_coll = f
 
 # parameters to save and read mid article info
-sim_save_mid_info = t
+sim_save_mid_info = f
 sim_read_mid_info = f
 sim_save_steps_interval = 100000
 

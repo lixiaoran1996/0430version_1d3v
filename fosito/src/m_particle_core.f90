@@ -52,7 +52,7 @@ module m_particle_core
     !> The surface particle number (total, electrons, ions)
     real(dp) :: PC_Q_bd(2), PC_elec_bd(2), PC_ion_bd(2)
     
-    real(dp) :: PC_flux(:)
+    real(dp), allocatable :: PC_flux(:)
 
    !> The maximum number of particles (electrons, ions)
    integer  :: PC_max_num_part, PC_max_num_ion_part
@@ -80,6 +80,7 @@ module m_particle_core
    
    !> The positions of left and right boundaries
    real(dp) :: PC_posBD(2)
+   integer   :: PC_bd_ix_low, PC_bd_ix_high
 
    !> The type of boundary conditions for electrons and ions
    integer :: PC_bdType_Ion(2), PC_bdType_elec(2)
@@ -329,9 +330,12 @@ contains
 
       allocate(PC_ionization_number(grid_size))
       PC_ionization_number = 0.d0
-       
-      PC_posBD(1) = PC_len_del(1)
-      PC_posBD(2) = PC_domainLength - PC_len_del(2)
+      
+      PC_bd_ix_low = floor(PC_len_del(1)/delta_x)+1
+      PC_posBD(1) = PC_bd_ix_low * delta_x
+      PC_bd_ix_high = floor((PC_domainLength - PC_len_del(2))/delta_x)
+      PC_posBD(2) = PC_bd_ix_high * delta_x
+      
 
      ! print *, "PC_posBD positions are:", PC_posBD
 
@@ -424,20 +428,25 @@ contains
       PC_ionization_number = 0.d0
 
       PC_particles(1:PC_num_part)%t_left = dt
+      
+      !print *,"PC_advance"
 
       if (PC_coll%num > 0) then ! There are collisions
          ll = 1
          do while (ll <= PC_num_part)
-            old_loc = PC_particles(II)%x(3)
+            old_loc = PC_particles(ll)%x(3)
             call move_and_collide(ll)
-            new_loc = PC_particles(II)%x(3)
-            call add_PC_flux(old_loc,new_loc,PC_particles(II)%weight)
+            new_loc = PC_particles(ll)%x(3)
+            !print *, "move and collide:" , old_loc,new_loc,PC_particles(ll)%weight
+            if (PC_particles(ll)%live) then
+                call add_PC_flux(old_loc,new_loc,PC_particles(ll)%weight)
+            end if
             ll = ll + 1
          end do
          call remove_dead_particles()
       else                      ! There are no collisions
          do ll = 1, PC_num_part
-            old_loc = PC_particles(II)%x(3)
+            old_loc = PC_particles(ll)%x(3)
             tempDt = PC_particles(ll)%t_left
             call advance_particle(ll, PC_particles(ll)%t_left)
             !> boundary conditions: absorption
@@ -445,8 +454,11 @@ contains
                 call PC_boundary_for_electron(ll, PC_particles(ll)%x(3), tempDt)
             !    print *, "One electron is out:", PC_particles(ll)%x
             end if
-            new_loc = PC_particles(II)%x(3)
-            call add_PC_flux(old_loc,new_loc,PC_particles(II)%weight)
+            new_loc = PC_particles(ll)%x(3)
+            !print *, "advance particles:" , old_loc,new_loc,PC_particles(ll)%weight
+            if (PC_particles(ll)%live) then
+                call add_PC_flux(old_loc,new_loc,PC_particles(ll)%weight)
+            end if
          end do
          call remove_dead_particles()
       end if
@@ -464,8 +476,10 @@ contains
       call loc_to_index( new_loc, new_ix)
       if ( new_ix > old_ix) then
       PC_flux(new_ix) =  PC_flux(new_ix) + weight
+      print *, "flux: ", old_ix, new_ix, weight
       else if (new_ix < old_ix) then
       PC_flux(old_ix) = PC_flux(old_ix) - weight
+      print *, "flux: ", old_ix, new_ix, weight
       end if
 
    end subroutine add_PC_flux
@@ -475,7 +489,7 @@ contains
       integer, intent(inout) :: low_ix
       real(dp)                :: temp
       
-          temp   = loc * PM_inv_delta_x
+          temp   = loc / PC_delta_x
           low_ix = floor(temp) + 1
    end subroutine loc_to_index
    
@@ -2613,12 +2627,12 @@ contains
         real(dp), intent(in) :: pos, dt
     
         if (pos <= PC_posBD(1)) then
-
             select case(PC_bdType_elec(1))
             case(1)   ! absorb
                 call PC_killElec(ll)
-            PC_Q_bd(1)=PC_Q_bd(1)-PC_particles(ll)%weight
-            PC_elec_bd(1) = PC_elec_bd(1) + PC_particles(ll)%weight
+                PC_flux(PC_bd_ix_low) = PC_flux(PC_bd_ix_low) - PC_particles(ll)%weight
+                PC_Q_bd(1)=PC_Q_bd(1)-PC_particles(ll)%weight
+                PC_elec_bd(1) = PC_elec_bd(1) + PC_particles(ll)%weight
             case(2)   ! partial reflection
                 if (RNG_uniform() <= PC_coElecRefl(1)) then
                     !call specularReflectionForElec(ll)
@@ -2633,8 +2647,9 @@ contains
             select case(PC_bdType_elec(2))
             case(1)   ! absorb
                 call PC_killElec(ll)
-            PC_Q_bd(2)=PC_Q_bd(2)-PC_particles(ll)%weight
-            PC_elec_bd(2) = PC_elec_bd(2) + PC_particles(ll)%weight
+                PC_flux(PC_bd_ix_high) = PC_flux(PC_bd_ix_high) + PC_particles(ll)%weight
+                PC_Q_bd(2)=PC_Q_bd(2)-PC_particles(ll)%weight
+                PC_elec_bd(2) = PC_elec_bd(2) + PC_particles(ll)%weight
             case(2)   ! partial reflection
                 if (RNG_uniform() <= PC_coElecRefl(2)) then
                     !call specularReflectionForElec(ll)

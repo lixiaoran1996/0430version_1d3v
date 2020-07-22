@@ -48,6 +48,7 @@ module m_particle_1d
    real(dp),allocatable  :: PM_delLen(:)
 
    real(dp)              :: PM_surChargeAtnodes(2), PM_surChargeAtroot(2)
+   real(dp)              :: PM_surIon_flux(2), PM_surElec_flux(2)
 
     ! Anbang: here we define the averged number of particles and mean weight
     real(dp), allocatable :: PM_part_num_per_cell(:,:)  ! for electrons and ions
@@ -1315,8 +1316,6 @@ contains
         use m_efield_1d
         
         real(dp),intent(in)     :: dt
-        real(dp)                :: surfElecFlux(2)
-        real(dp)                :: surfIonFlux(2)
         integer                 :: dbd_index(2),dbd_type
 	PM_surChargeAtnodes=0.d0
 	PM_surElec_flux = 0.d0        ! which records electrons accumulated on surface this time step
@@ -1732,12 +1731,15 @@ contains
         
         max_dens(1) = maxval(PM_vars(:,PM_iv_elec))
         max_dens(2) = maxval(PM_vars(:,PM_iv_ion))
-    sur_all=PM_surChargeAtroot, PM_surElec_flux, PM_surIon_flux
+        sur_all(1:2) = PM_surChargeAtroot
+        sur_all(3:4) = PM_surElec_flux
+        sur_all(5:6) = PM_surIon_flux
     end subroutine PM_get_max_dens
     
     subroutine PM_out_flux(flux_all)
-        real(dp), intent(out) :: flux_all(PM_grid_size+1)
+        real(dp), intent(out),allocatable :: flux_all(:)
         
+        allocate(flux_all(PM_grid_size+1))
         call PC_out_flux(PM_flux)
         flux_all = PM_flux
    
